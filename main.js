@@ -11,57 +11,15 @@ let orientationPermissionGranted = false;
 // Show debug by default to help troubleshoot
 debugElement.style.display = 'block';
 
-// Check if device orientation is supported
-if (window.DeviceOrientationEvent) {
+// Check if device motion/orientation is supported
+if (window.DeviceOrientationEvent || window.DeviceMotionEvent) {
     hasOrientationSupport = true;
-    console.log('DeviceOrientationEvent is supported');
+    console.log('Device motion/orientation is supported');
 } else {
-    console.log('DeviceOrientationEvent is NOT supported');
+    console.log('Device motion/orientation is NOT supported');
 }
 
-// Add better error handling and logging
-function setupOrientationListener() {
-    if (hasOrientationSupport) {
-        window.addEventListener('deviceorientation', handleOrientation);
-        console.log('Added deviceorientation listener');
-        
-        // Test if we're getting events after a delay
-        setTimeout(() => {
-            console.log('Checking if orientation events are firing...');
-        }, 2000);
-    }
-}
-
-// Fallback for desktop or when orientation doesn't work
-document.addEventListener('mousemove', handleMouseMove);
-
-// Request permission for iOS 13+ and setup listeners
-async function requestOrientationPermission() {
-    console.log('Requesting orientation permission...');
-    
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-            const permissionState = await DeviceOrientationEvent.requestPermission();
-            console.log('Permission state:', permissionState);
-            
-            if (permissionState === 'granted') {
-                orientationPermissionGranted = true;
-                setupOrientationListener();
-                console.log('Orientation permission granted');
-            } else {
-                console.log('Orientation permission denied');
-            }
-        } catch (error) {
-            console.error('Error requesting permission:', error);
-        }
-    } else {
-        // For Android and older iOS, just set up the listener
-        console.log('No permission needed, setting up listener');
-        setupOrientationListener();
-    }
-}
-
-// Handle device orientation changes with better logging
+// Handle device orientation changes with better logging (fallback)
 function handleOrientation(event) {
     console.log('Orientation event fired:', event.gamma, event.beta, event.alpha);
     
@@ -83,6 +41,112 @@ function handleOrientation(event) {
         console.log('Gamma or Beta is null');
     }
 }
+
+// Request permission for iOS 13+ and setup listeners
+async function requestOrientationPermission() {
+    console.log('Requesting motion/orientation permission...');
+    
+    // Try DeviceMotionEvent first (better for iOS 13+)
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const permissionState = await DeviceMotionEvent.requestPermission();
+            console.log('DeviceMotion permission state:', permissionState);
+            
+            if (permissionState === 'granted') {
+                orientationPermissionGranted = true;
+                window.addEventListener('devicemotion', handleMotion);
+                window.addEventListener('deviceorientation', handleOrientation);
+                console.log('DeviceMotion permission granted');
+                return;
+            } else {
+                console.log('DeviceMotion permission denied');
+            }
+        } catch (error) {
+            console.error('Error requesting DeviceMotion permission:', error);
+        }
+    }
+    
+    // Fallback to DeviceOrientationEvent
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+            const permissionState = await DeviceOrientationEvent.requestPermission();
+            console.log('DeviceOrientation permission state:', permissionState);
+            
+            if (permissionState === 'granted') {
+                orientationPermissionGranted = true;
+                setupOrientationListener();
+                console.log('DeviceOrientation permission granted');
+                return;
+            } else {
+                console.log('DeviceOrientation permission denied');
+            }
+        } catch (error) {
+            console.error('Error requesting DeviceOrientation permission:', error);
+        }
+    }
+    
+    // For Android and older iOS, just set up the listeners
+    console.log('No permission needed, setting up listeners');
+    setupOrientationListener();
+    window.addEventListener('devicemotion', handleMotion);
+}
+
+// Handle device motion events (better for iOS)
+function handleMotion(event) {
+    console.log('Motion event fired:', event);
+    
+    // Use rotationRate for motion-based control
+    if (event.rotationRate) {
+        const { alpha, beta, gamma } = event.rotationRate;
+        console.log('Rotation rates - alpha:', alpha, 'beta:', beta, 'gamma:', gamma);
+        
+        if (gamma !== null && beta !== null) {
+            // Map rotation rates to font variations
+            // Clamp values for better control
+            const clampedGamma = Math.max(-90, Math.min(90, gamma * 10)); // Scale for sensitivity
+            const clampedBeta = Math.max(-90, Math.min(90, beta * 10));
+            
+            const width = mapRange(clampedGamma, -90, 90, 100, 900);
+            const weight = mapRange(clampedBeta, -90, 90, 100, 900);
+            
+            updateFontVariation(width, weight);
+            updateDebugInfo(clampedGamma, clampedBeta, width, weight);
+        }
+    }
+    
+    // Fallback to acceleration if rotationRate not available
+    if (event.acceleration && !event.rotationRate) {
+        const { x, y } = event.acceleration;
+        console.log('Acceleration - x:', x, 'y:', y);
+        
+        if (x !== null && y !== null) {
+            const clampedX = Math.max(-10, Math.min(10, x));
+            const clampedY = Math.max(-10, Math.min(10, y));
+            
+            const width = mapRange(clampedX, -10, 10, 100, 900);
+            const weight = mapRange(clampedY, -10, 10, 100, 900);
+            
+            updateFontVariation(width, weight);
+            updateDebugInfo(clampedX, clampedY, width, weight);
+        }
+    }
+}
+
+// Add better error handling and logging
+function setupOrientationListener() {
+    if (hasOrientationSupport) {
+        window.addEventListener('deviceorientation', handleOrientation);
+        console.log('Added deviceorientation listener');
+        
+        // Test if we're getting events after a delay
+        setTimeout(() => {
+            console.log('Checking if orientation events are firing...');
+        }, 2000);
+    }
+}
+
+// Fallback for desktop or when orientation doesn't work
+document.addEventListener('mousemove', handleMouseMove);
 
 // Fallback mouse control for desktop
 function handleMouseMove(event) {
