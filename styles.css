@@ -1,3 +1,9 @@
+@font-face {
+    font-family: 'MacroSans VF';
+    src: url('MacroSans-VF.ttf') format('truetype');
+    font-display: swap;
+}
+
 html {
     font-family: 'MacroSans VF', sans-serif;
     height: 100%;
@@ -6,7 +12,7 @@ html {
 }
 
 body {
-    font-size: 10vw;
+    font-size: 15vw;
     line-height: .9;
     height: 100vh;
     text-align: center;
@@ -15,7 +21,7 @@ body {
     justify-content: center;
     align-items: center;
     margin: 0;
-    background: black;
+    background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
     color: white;
     overflow: hidden;
 }
