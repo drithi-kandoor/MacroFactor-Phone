@@ -27,13 +27,13 @@ function handleOrientation(event) {
     const beta = event.beta;   // Front/Back tilt (-180 to 180)
     
     if (gamma !== null && beta !== null) {
-        // Map gamma (-90 to 90) to width (100 to 900)
-        const width = mapRange(gamma, -90, 90, 100, 900);
+        // Map gamma (-45 to 45) to width (100 to 900)
+        const width = mapRange(gamma, -45, 45, 100, 900);
         
-        // Map beta (-90 to 90) to weight (100 to 900)
+        // Map beta (-45 to 45) to weight (100 to 900)
         // Clamp beta to reasonable range for better control
-        const clampedBeta = Math.max(-90, Math.min(90, beta));
-        const weight = mapRange(clampedBeta, -90, 90, 100, 900);
+        const clampedBeta = Math.max(-45, Math.min(45, beta));
+        const weight = mapRange(clampedBeta, -45, 45, 100, 900);
         
         updateFontVariation(width, weight);
         updateDebugInfo(gamma, beta, width, weight);
@@ -103,11 +103,11 @@ function handleMotion(event) {
         if (gamma !== null && beta !== null) {
             // Map rotation rates to font variations
             // Clamp values for better control
-            const clampedGamma = Math.max(-90, Math.min(90, gamma * 10)); // Scale for sensitivity
-            const clampedBeta = Math.max(-90, Math.min(90, beta * 10));
+            const clampedGamma = Math.max(-45, Math.min(45, gamma * 10)); // Scale for sensitivity
+            const clampedBeta = Math.max(-45, Math.min(45, beta * 10));
             
-            const width = mapRange(clampedGamma, -90, 90, 100, 900);
-            const weight = mapRange(clampedBeta, -90, 90, 100, 900);
+            const width = mapRange(clampedGamma, -45, 45, 100, 900);
+            const weight = mapRange(clampedBeta, -45, 45, 100, 900);
             
             updateFontVariation(width, weight);
             updateDebugInfo(clampedGamma, clampedBeta, width, weight);
@@ -162,7 +162,7 @@ function handleMouseMove(event) {
     const weight = mapRange(y, 0, windowHeight, 100, 900);
     
     updateFontVariation(width, weight);
-    updateDebugInfo(x / windowWidth * 180 - 90, y / windowHeight * 180 - 90, width, weight);
+    updateDebugInfo(x / windowWidth * 90 - 45, y / windowHeight * 90 - 45, width, weight);
 }
 
 // Update font variation settings
