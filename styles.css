@@ -1,0 +1,46 @@
+html {
+    font-family: 'MacroSans VF', sans-serif;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-size: 10vw;
+    line-height: .9;
+    height: 100vh;
+    text-align: center;
+    font-variation-settings: 'wght' 700, 'wdth' 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    background: black;
+    color: white;
+    overflow: hidden;
+}
+
+#text {
+    transition: font-variation-settings 0.1s ease-out;
+    user-select: none;
+}
+
+/* Fallback for devices without deviceorientation support */
+@media (hover: hover) {
+    body {
+        cursor: crosshair;
+    }
+}
+
+/* Debug info (optional - remove in production) */
+.debug {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 12px;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    z-index: 1000;
+}
