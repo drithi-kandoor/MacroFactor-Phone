@@ -6,33 +6,65 @@ const widthValueElement = document.getElementById('widthValue');
 const weightValueElement = document.getElementById('weightValue');
 
 let hasOrientationSupport = false;
+let orientationPermissionGranted = false;
+
+// Show debug by default to help troubleshoot
+debugElement.style.display = 'block';
 
 // Check if device orientation is supported
 if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', handleOrientation);
     hasOrientationSupport = true;
+    console.log('DeviceOrientationEvent is supported');
+} else {
+    console.log('DeviceOrientationEvent is NOT supported');
 }
 
-// Fallback for desktop: use mouse position
-if (!hasOrientationSupport || window.innerWidth > 768) {
-    document.addEventListener('mousemove', handleMouseMove);
-}
-
-// Request permission for iOS 13+
-function requestOrientationPermission() {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(permissionState => {
-                if (permissionState === 'granted') {
-                    window.addEventListener('deviceorientation', handleOrientation);
-                }
-            })
-            .catch(console.error);
+// Add better error handling and logging
+function setupOrientationListener() {
+    if (hasOrientationSupport) {
+        window.addEventListener('deviceorientation', handleOrientation);
+        console.log('Added deviceorientation listener');
+        
+        // Test if we're getting events after a delay
+        setTimeout(() => {
+            console.log('Checking if orientation events are firing...');
+        }, 2000);
     }
 }
 
-// Handle device orientation changes
+// Fallback for desktop or when orientation doesn't work
+document.addEventListener('mousemove', handleMouseMove);
+
+// Request permission for iOS 13+ and setup listeners
+async function requestOrientationPermission() {
+    console.log('Requesting orientation permission...');
+    
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+            const permissionState = await DeviceOrientationEvent.requestPermission();
+            console.log('Permission state:', permissionState);
+            
+            if (permissionState === 'granted') {
+                orientationPermissionGranted = true;
+                setupOrientationListener();
+                console.log('Orientation permission granted');
+            } else {
+                console.log('Orientation permission denied');
+            }
+        } catch (error) {
+            console.error('Error requesting permission:', error);
+        }
+    } else {
+        // For Android and older iOS, just set up the listener
+        console.log('No permission needed, setting up listener');
+        setupOrientationListener();
+    }
+}
+
+// Handle device orientation changes with better logging
 function handleOrientation(event) {
+    console.log('Orientation event fired:', event.gamma, event.beta, event.alpha);
+    
     const gamma = event.gamma; // Left/Right tilt (-90 to 90)
     const beta = event.beta;   // Front/Back tilt (-180 to 180)
     
@@ -47,6 +79,8 @@ function handleOrientation(event) {
         
         updateFontVariation(width, weight);
         updateDebugInfo(gamma, beta, width, weight);
+    } else {
+        console.log('Gamma or Beta is null');
     }
 }
 
@@ -92,8 +126,17 @@ textElement.addEventListener('click', () => {
     debugElement.style.display = debugElement.style.display === 'none' ? 'block' : 'none';
 });
 
-// For iOS devices, request permission on user interaction
+// For mobile devices, request permission on user interaction
 textElement.addEventListener('touchstart', requestOrientationPermission, { once: true });
+textElement.addEventListener('click', requestOrientationPermission, { once: true });
+
+// Also try to set up orientation listener on page load for Android
+window.addEventListener('load', () => {
+    console.log('Page loaded, attempting to set up orientation...');
+    requestOrientationPermission();
+});
 
 // Initialize with default values
 updateFontVariation(100, 700);
+
+console.log('Script loaded, hasOrientationSupport:', hasOrientationSupport);
