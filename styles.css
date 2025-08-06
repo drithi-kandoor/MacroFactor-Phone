@@ -42,11 +42,13 @@ body {
 .debug {
     position: fixed;
     top: 10px;
-    left: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 12px;
     background: rgba(0,0,0,0.7);
     padding: 10px;
     border-radius: 5px;
-    font-family: monospace;
+    font-variation-settings: 'wght' 300, 'wdth' 100;
+    line-height: 1.2;
     z-index: 1000;
 }
