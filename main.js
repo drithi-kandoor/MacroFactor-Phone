@@ -185,14 +185,14 @@ function mapRange(value, inMin, inMax, outMin, outMax) {
     return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
-// Toggle debug display (tap/click to show/hide)
+// Toggle debug display (tap/click to show/hide) - only on text element
 textElement.addEventListener('click', () => {
     debugElement.style.display = debugElement.style.display === 'none' ? 'block' : 'none';
 });
 
-// For mobile devices, request permission on user interaction
-textElement.addEventListener('touchstart', requestOrientationPermission, { once: true });
-textElement.addEventListener('click', requestOrientationPermission, { once: true });
+// For mobile devices, request permission on any screen tap/touch
+document.addEventListener('touchstart', requestOrientationPermission, { once: true });
+document.addEventListener('click', requestOrientationPermission, { once: true });
 
 // Also try to set up orientation listener on page load for Android
 window.addEventListener('load', () => {
